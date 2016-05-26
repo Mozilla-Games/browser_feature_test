@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>featuretest.js example</title>
+    <script src="featuretest.js"></script>
+  </head>
+  <body>
+    <h2>featuretest.js example</h2>
+    <div id='results'></div>
+    <script>
+    function onFeatureTestComplete(results) {
+      document.getElementById('results').innerHTML = '<pre>results = ' + JSON.stringify(results, null, 2); + ';</pre>';
+    }
+    document.getElementById('results').innerHTML = '<pre>Running feature test...</pre>';
+    browserFeatureTest(onFeatureTestComplete);
+    </script>
+    <hr>
+    <div>Result fields are interpreted as follows:
+      <ul>
+        <li><b>featureTestVersion</b>: the version number of this test code itself.
+        <li><b>runDate</b>: local browser time of when the test was run.
+        <li><b>appVersion</b>: passes <i>navigator.appVersion</i>.
+        <li><b>platform</b>: passes <i>navigator.platform</i>.
+        <li><b>userAgent</b>: passes <i>navigator.userAgent</i>.
+        <li><b>contiguousSystemMemory</b>: The maximum amount of memory that JavaScript code is able to allocate in one contiguous block, in bytes. The maximum contiguous allocation size is 2GB.
+        <li><b>noncontiguousSystemMemory</b>: The maximum amount of memory that JavaScript code is able to allocate in multiple blocks, in bytes. This memory size is reported only up to 3GB, more available memory past that amount is not tested.
+        <li><b>displayRefreshRate</b>: measures the rate at which the requestAnimationFrame() callbacks ticks forward, i.e. the vsync rate of the display.
+        <li><b>windowDevicePixelRatio</b>: passes <i>window.devicePixelRatio</i>.
+        <li><b>screenWidth</b>: passes <i>screen.width</i>. This is the pixel width of the display in logical CSS pixel units.
+        <li><b>screenHeight</b>: passes <i>screen.height</i>. This is the pixel height of the display in logical CSS pixel units.
+        <li><b>physicalScreenWidth</b>: computes the actual display pixel width in hardware pixels.
+        <li><b>physicalScreenHeight</b>: computes the actual display pixel height in hardware pixels.
+        <li><b>hardwareConcurrency</b>: passes <i>navigator.hardwareConcurrency</i>. If this is not supported, '0' is returned here.
+        <li><b>singleCoreMips</b>: measures the single core clock speed of the processor, in fictional performance units.
+        <li><b>supportsWebGL</b>: specifies if any form of WebGL is available, e.g. could be software-accelerated experimental-webgl.
+        <li><b>webGLNotSupportedReasons</b>: if some variants of WebGL are not supported (WebGL 1 vs WebGL 2, software vs hardware), this object specifies the error reasons why those APIs are not supported.
+        <li><b>supportedApis</b>: lists the various Web APIs that are supported by the browser.
+        <li><b>unsupportedApis</b>: lists all the remaining Web APIs that were tested for, but support is not present.
+        <li><b>canonicalizesNansInsideAsmModule</b>: tests whether the browser is able to carry payload data in floating point NaN values inside an asm.js module.
+        <li><b>canonicalizesNansOutsideAsmModule</b>: tests whether the browser is able to carry payload data in floating point NaN values in regular handwritten JavaScript code.
+        <li><b>canonicalF32NanValueInsideAsmModule</b>: specifies the bit pattern of the canonical single-precision floating point NaN value inside an asm.js module.
+        <li><b>canonicalF32NanValueOutsideAsmModule</b>: specifies the bit pattern of the canonical single-precision floating point NaN value in regular handwritten JavaScript code.
+        <li><b>canonicalF64NanValueInsideAsmModule</b>: specifies the bit pattern of the canonical double-precision floating point NaN value inside an asm.js module.
+        <li><b>canonicalF64NanValueOutsideAsmModule</b>: specifies the bit pattern of the canonical double-precision floating point NaN value in regular handwritten JavaScript code.
+        <li><b>GL_VENDOR</b>: passes WebGL GL_VENDOR string from the highest supported version of the WebGL context.
+        <li><b>GL_RENDERER</b>: passes WebGL GL_RENDERER string from the highest supported version of the WebGL context.
+        <li><b>GL_VERSION</b>: passes WebGL GL_VERSION string from the highest supported version of the WebGL context.
+        <li><b>GL_SHADING_LANGUAGE_VERSION</b>: passes WebGL GL_SHADING_LANGUAGE_VERSION string from the highest supported version of the WebGL context.
+        <li><b>supportedWebGLExtensions</b>: lists the different WebGL extensions that are available in the highest supported version of the WebGL context.
+      </ul>
+    </div>
+  </body>
+</html>

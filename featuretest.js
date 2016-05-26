@@ -143,33 +143,46 @@ function browserFeatureTest(successCallback) {
   storeSupport('Geolocation API', navigator.geolocation);
   storeSupport('Battery Status API', navigator.getBattery);
 
-  var webGLNotSupportedReasons = {};
-  function getCanvas(typeString) {
-    var c = document.createElement('canvas');
-    c.addEventListener("webglcontextcreationerror", function(e) {
-      if (!webGLNotSupportedReasons[typeString]) webGLNotSupportedReasons[typeString] = e.statusMessage;
-    }, false);
-    return c;
+  var webGLSupport = {};
+  var bestGLContext = null; // The GL contexts are tested from best to worst (newest to oldest), and the most desirable
+                            // context is stored here for later use.
+  function testWebGLSupport(contextName, failIfMajorPerformanceCaveat) {
+    var canvas = document.createElement('canvas');
+    var errorReason = '';
+    canvas.addEventListener("webglcontextcreationerror", function(e) { errorReason = e.statusMessage; }, false);
+    var context = canvas.getContext(contextName, failIfMajorPerformanceCaveat ? { failIfMajorPerformanceCaveat: true } : {});
+    if (context && !errorReason) {
+      if (!bestGLContext) bestGLContext = context;
+      var results = { supported: true, performanceCaveat: !failIfMajorPerformanceCaveat };
+      if (contextName == 'experimental-webgl') results['experimental-webgl'] = true;
+      return results;
+    }
+    else return { supported: false, errorReason: errorReason };
   }
-  var hardwareWebGL2 = getCanvas('hardwareWebGL2').getContext('webgl2', { failIfMajorPerformanceCaveat: true });
-  var performanceCaveatWebGL2 = getCanvas('performanceCaveatWebGL2').getContext('webgl2');
-  var hardwareWebGL1 = getCanvas('hardwareWebGL1').getContext('webgl', { failIfMajorPerformanceCaveat: true });
-  if (!hardwareWebGL1) hardwareWebGL1 = getCanvas('hardwareWebGL1').getContext('experimental-webgl', { failIfMajorPerformanceCaveat: true });
-  var performanceCaveatWebGL1 = getCanvas('performanceCaveatWebGL1').getContext('webgl');
-  if (!performanceCaveatWebGL1) performanceCaveatWebGL1 = getCanvas('performanceCaveatWebGL1').getContext('experimental-webgl');
 
-  if (performanceCaveatWebGL1 && !hardwareWebGL1) storeSupport('WebGL 1 (with performance caveat)', true);
-  else storeSupport('WebGL 1 (hardware-accelerated)', hardwareWebGL1);
+  webGLSupport['webgl2'] = testWebGLSupport('webgl2', true);
+  if (!webGLSupport['webgl2'].supported) webGLSupport['webgl2'] = testWebGLSupport('webgl2', false);
 
-  if (performanceCaveatWebGL2 && !hardwareWebGL2) storeSupport('WebGL 2 (with performance caveat)', true);
-  else storeSupport('WebGL 2 (hardware-accelerated)', hardwareWebGL2);
+  webGLSupport['webgl1'] = testWebGLSupport('webgl', true);
+  if (!webGLSupport['webgl1'].supported) {
+    var experimentalWebGL = testWebGLSupport('experimental-webgl', true);
+    if (experimentalWebGL.supported || (experimentalWebGL.errorReason && !webGLSupport['webgl1'].errorReason)) {
+      webGLSupport['webgl1'] = experimentalWebGL;
+    }
+  }
 
-  var gl = hardwareWebGL2 || hardwareWebGL1 || performanceCaveatWebGL2 || performanceCaveatWebGL1;
+  if (!webGLSupport['webgl1'].supported) {
+    webGLSupport['webgl1'] = testWebGLSupport('webgl', false);
+    if (!webGLSupport['webgl1'].supported) {
+      var experimentalWebGL = testWebGLSupport('experimental-webgl', false);
+      if (experimentalWebGL.supported || (experimentalWebGL.errorReason && !webGLSupport['webgl1'].errorReason)) {
+        webGLSupport['webgl1'] = experimentalWebGL;
+      }
+    }
+  }
 
-  if (!performanceCaveatWebGL1 && !webGLNotSupportedReasons['performanceCaveatWebGL1']) webGLNotSupportedReasons['performanceCaveatWebGL1'] = 'No error reason given';
-  if (!hardwareWebGL1 && !webGLNotSupportedReasons['hardwareWebGL1']) webGLNotSupportedReasons['hardwareWebGL1'] = 'No error reason given';
-  if (!performanceCaveatWebGL2 && !webGLNotSupportedReasons['performanceCaveatWebGL2']) webGLNotSupportedReasons['performanceCaveatWebGL2'] = 'No error reason given';
-  if (!hardwareWebGL2 && !webGLNotSupportedReasons['hardwareWebGL2']) webGLNotSupportedReasons['hardwareWebGL2'] = 'No error reason given';
+  storeSupport('WebGL 1', webGLSupport['webgl1'].supported);
+  storeSupport('WebGL 2', webGLSupport['webgl2'].supported);
 
   function performance_now() { return performance.now(); }
   if (!Math.fround) Math.fround = function(x) { return x; }
@@ -299,8 +312,7 @@ function browserFeatureTest(successCallback) {
     physicalScreenHeight: screen.height*window.devicePixelRatio,
     hardwareConcurrency: navigator.hardwareConcurrency, // If browser does not support this, will be asynchronously filled in by core estimator.
     singleCoreMips: singleCoreMips,
-    supportsWebGL: gl ? true : false, // Denotes if any kind of WebGL is available. Specified here for conveniency to avoid needing to parse supportedApis list for the four different possible flavors of WebGL.
-    webGLNotSupportedReasons: webGLNotSupportedReasons,
+    webGLSupport: webGLSupport,
     supportedApis: supportedApis,
     unsupportedApis: unsupportedApis,
     canonicalizesNansInsideAsmModule: canonicalizesNansInsideAsmModule,
@@ -311,18 +323,18 @@ function browserFeatureTest(successCallback) {
     canonicalF64NanValueOutsideAsmModule: canonicalF64NanValueOutsideAsmModule
   };
 
-  if (gl) {
-    results.GL_VENDOR = gl.getParameter(gl.VENDOR);
-    results.GL_RENDERER = gl.getParameter(gl.RENDERER);
-    results.GL_VERSION = gl.getParameter(gl.VERSION);
-    results.GL_SHADING_LANGUAGE_VERSION = gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+  if (bestGLContext) {
+    results.GL_VENDOR = bestGLContext.getParameter(bestGLContext.VENDOR);
+    results.GL_RENDERER = bestGLContext.getParameter(bestGLContext.RENDERER);
+    results.GL_VERSION = bestGLContext.getParameter(bestGLContext.VERSION);
+    results.GL_SHADING_LANGUAGE_VERSION = bestGLContext.getParameter(bestGLContext.SHADING_LANGUAGE_VERSION);
 
-    var WEBGL_debug_renderer_info = gl.getExtension('WEBGL_debug_renderer_info');
+    var WEBGL_debug_renderer_info = bestGLContext.getExtension('WEBGL_debug_renderer_info');
     if (WEBGL_debug_renderer_info) {
-      results.GL_UNMASKED_VENDOR_WEBGL = gl.getParameter(WEBGL_debug_renderer_info.UNMASKED_VENDOR_WEBGL);
-      results.GL_UNMASKED_RENDERER_WEBGL = gl.getParameter(WEBGL_debug_renderer_info.UNMASKED_RENDERER_WEBGL);
+      results.GL_UNMASKED_VENDOR_WEBGL = bestGLContext.getParameter(WEBGL_debug_renderer_info.UNMASKED_VENDOR_WEBGL);
+      results.GL_UNMASKED_RENDERER_WEBGL = bestGLContext.getParameter(WEBGL_debug_renderer_info.UNMASKED_RENDERER_WEBGL);
     }
-    results.supportedWebGLExtensions = gl.getSupportedExtensions();
+    results.supportedWebGLExtensions = bestGLContext.getSupportedExtensions();
   }
 
   // Spin off the asynchronous tasks.

@@ -33,8 +33,7 @@
         <li><b>physicalScreenHeight</b>: computes the actual display pixel height in hardware pixels.
         <li><b>hardwareConcurrency</b>: passes <i>navigator.hardwareConcurrency</i>. If this is not supported, '0' is returned here.
         <li><b>singleCoreMips</b>: measures the single core clock speed of the processor, in fictional performance units.
-        <li><b>supportsWebGL</b>: specifies if any form of WebGL is available, e.g. could be software-accelerated experimental-webgl.
-        <li><b>webGLNotSupportedReasons</b>: if some variants of WebGL are not supported (WebGL 1 vs WebGL 2, software vs hardware), this object specifies the error reasons why those APIs are not supported.
+        <li><b>webGLSupport</b>: Enumerates the support status of WebGL 1 and WebGL 2 and software vs hardware acceleration support. If some of these are not supported, this object specifies the error reasons.
         <li><b>supportedApis</b>: lists the various Web APIs that are supported by the browser.
         <li><b>unsupportedApis</b>: lists all the remaining Web APIs that were tested for, but support is not present.
         <li><b>canonicalizesNansInsideAsmModule</b>: tests whether the browser is able to carry payload data in floating point NaN values inside an asm.js module.
@@ -59,6 +58,7 @@
         &lt;script&gt;
           function onFeatureTestComplete(results) {
             if (results.supportedApis.indexOf('IndexedDB') != -1) console.log('IndexedDB is supported!');
+            if (results.webGLSupport.webgl1.supported && !results.webGLSupport.webgl1.performanceCaveat) console.log('Hardware-accelerated WebGL is supported!');
             console.log(JSON.stringify(results, null, 2));
           }
           browserFeatureTest(onFeatureTestComplete);

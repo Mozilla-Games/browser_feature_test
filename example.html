@@ -49,6 +49,23 @@
         <li><b>GL_SHADING_LANGUAGE_VERSION</b>: passes WebGL GL_SHADING_LANGUAGE_VERSION string from the highest supported version of the WebGL context.
         <li><b>supportedWebGLExtensions</b>: lists the different WebGL extensions that are available in the highest supported version of the WebGL context.
       </ul>
+      <hr>
+      <h3>Usage</h3>
+      <p>To incorporate the feature tests to your own code, copy over featuretest.js from this repository and call the browserFeatureTest function as shown in the code snippet below. See the page source of this .html file for a complete example.
+        <pre>
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;script src="featuretest.js"&gt;&lt;/script&gt;
+        &lt;script&gt;
+          function onFeatureTestComplete(results) {
+            if (results.supportedApis.indexOf('IndexedDB') != -1) console.log('IndexedDB is supported!');
+            console.log(JSON.stringify(results, null, 2));
+          }
+          browserFeatureTest(onFeatureTestComplete);
+        &lt;/script&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+        </pre>
     </div>
   </body>
 </html>

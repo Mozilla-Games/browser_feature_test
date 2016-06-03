@@ -161,7 +161,13 @@ function browserFeatureTest(successCallback) {
   }
 
   webGLSupport['webgl2'] = testWebGLSupport('webgl2', true);
-  if (!webGLSupport['webgl2'].supported) webGLSupport['webgl2'] = testWebGLSupport('webgl2', false);
+  if (!webGLSupport['webgl2'].supported) {
+    var softwareWebGL2 = testWebGLSupport('webgl2', false);
+    if (softwareWebGL2.supported) {
+      softwareWebGL2.hardwareErrorReason = webGLSupport['webgl2'].errorReason; // Capture the reason why hardware WebGL 2 context did not succeed.
+      webGLSupport['webgl2'] = softwareWebGL2;
+    }
+  }
 
   webGLSupport['webgl1'] = testWebGLSupport('webgl', true);
   if (!webGLSupport['webgl1'].supported) {
@@ -172,13 +178,18 @@ function browserFeatureTest(successCallback) {
   }
 
   if (!webGLSupport['webgl1'].supported) {
-    webGLSupport['webgl1'] = testWebGLSupport('webgl', false);
-    if (!webGLSupport['webgl1'].supported) {
+    var softwareWebGL1 = testWebGLSupport('webgl', false);
+    if (!softwareWebGL1.supported) {
       var experimentalWebGL = testWebGLSupport('experimental-webgl', false);
-      if (experimentalWebGL.supported || (experimentalWebGL.errorReason && !webGLSupport['webgl1'].errorReason)) {
-        webGLSupport['webgl1'] = experimentalWebGL;
+      if (experimentalWebGL.supported || (experimentalWebGL.errorReason && !softwareWebGL1.errorReason)) {
+        softwareWebGL1 = experimentalWebGL;
       }
     }
+
+    if (softwareWebGL1.supported) {
+      softwareWebGL1.hardwareErrorReason = webGLSupport['webgl1'].errorReason; // Capture the reason why hardware WebGL 1 context did not succeed.
+      webGLSupport['webgl1'] = softwareWebGL1;
+    }    
   }
 
   storeSupport('WebGL 1', webGLSupport['webgl1'].supported);
@@ -378,4 +389,75 @@ function browserFeatureTest(successCallback) {
 
   // If caller is not interested in asynchronously fillable data, also return the results object immediately for the synchronous bits.
   return results;
+}
+
+// Returns a pretty-printed form of the test results JSON.
+function prettyPrintTestResults(results) {
+  var s = 'Detection code version: ' + results.featureTestVersion + '\n';
+  s += 'Run date: ' + results.runDate + '\n';
+  s += 'User agent: ' + results.userAgent + '\n';
+  if (results.buildID) s += 'buildID: ' + results.buildID + '\n';
+  if (results.appVersion) s += 'appVersion: ' + results.appVersion + '\n';
+  if (results.mozE10sEnabled) s += 'mozE10sEnabled: true\n';
+  if (results.oscpu) s += 'OS: ' + results.oscpu + '\n';
+  if (results.platform) s += 'Platform: ' + results.platform + '\n';
+  var contiguousSystemMemory = Math.round(results.contiguousSystemMemory/1024/1024) + 'MB';
+  s += 'Estimated maximum contiguously allocatable system memory for asm.js heap: ' + contiguousSystemMemory + '\n';
+  var noncontiguousSystemMemory = Math.round(results.noncontiguousSystemMemory/1024/1024) + 'MB';
+  if (results.noncontiguousSystemMemory == 3271557120) {
+    s += 'Estimated total (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '+\n';
+  } else {
+    s += 'Estimated maximum (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '\n';
+  }
+  s += 'Display refresh rate: ' + results.displayRefreshRate + 'hz\n';
+  s += 'window.devicePixelRatio: ' + results.windowDevicePixelRatio + '\n';
+  s += 'display resolution in CSS pixels (screen.width x screen.height): ' + results.screenWidth + 'x' + results.screenHeight + '\n';
+  s += 'display resolution in physical pixels: ' + results.physicalScreenWidth + 'x' + results.physicalScreenHeight + '\n';
+  s += 'Number of logical cores: ' + results.hardwareConcurrency + '\n';
+  s += 'Single core performance: ' + results.singleCoreMips + ' MIPS\n';
+
+  if (results.supportedApis.length > 0) {
+    s += 'Supports the following web APIs:\n    ';
+    s += results.supportedApis.join('\n    ') + '\n';
+  }
+  if (results.unsupportedApis.length > 0) {
+    s += 'The following web APIs are not supported:\n    ';
+    s += results.unsupportedApis.join('\n    ') + '\n';
+  }
+
+  if (results.typedArraysAreLittleEndian === true) s += 'Typed Arrays are little endian.\n';
+  else if (results.typedArraysAreLittleEndian === false) s += 'Typed Arrays are big endian.\n';
+  else if (results.typedArraysAreLittleEndian === 'unknown') s += 'Typed Arrays are of unknown endianness!\n';
+  if (typeof results.canonicalizesNansInsideAsmModule !== 'undefined') {
+    if (results.canonicalizesNansInsideAsmModule) {
+       s += 'The JS engine canonicalizes NaNs inside the asm.js module to the F32 value ' + results.canonicalF32NanValueInsideAsmModule + ' and F64 value ' + results.canonicalF64NanValueInsideAsmModule + '.\n';
+    } else {
+       s += 'The JS engine does not canonicalize NaNs inside the asm.js module.\n';        
+    }
+  }
+  if (typeof results.canonicalizesNansOutsideAsmModule !== 'undefined') {
+    if (results.canonicalizesNansOutsideAsmModule) {
+       s += 'The JS engine canonicalizes NaNs outside the asm.js module to the F32 value ' + results.canonicalF32NanValueOutsideAsmModule + ' and F64 value ' + results.canonicalF64NanValueOutsideAsmModule + '.\n';
+    } else {
+       s += 'The JS engine does not canonicalize NaNs outside the asm.js module.\n';        
+    }
+  }
+
+  if (results.webGLSupport['webgl1'].supported || results.webGLSupport['webgl2'].supported ) {
+    s += 'GL_VENDOR: ' + results.GL_VENDOR + '\n';
+    s += 'GL_RENDERER: ' + results.GL_RENDERER + '\n';
+    s += 'GL_VERSION: ' + results.GL_VERSION + '\n';
+    s += 'GL_SHADING_LANGUAGE_VERSION: ' + results.GL_SHADING_LANGUAGE_VERSION + '\n';
+    if (results.GL_UNMASKED_VENDOR_WEBGL) s += 'GL_UNMASKED_VENDOR_WEBGL: ' + results.GL_UNMASKED_VENDOR_WEBGL + '\n';
+    if (results.GL_UNMASKED_RENDERER_WEBGL) s += 'GL_UNMASKED_RENDERER_WEBGL: ' + results.GL_UNMASKED_RENDERER_WEBGL + '\n';
+    s += 'WebGL extensions:\n    ' + results.supportedWebGLExtensions.join('\n    ') + '\n';
+  } else {
+    s += 'WebGL is not supported.\n';
+  }
+  if (results.webGLSupport['webgl2'].hardwareErrorReason) s += 'Reason why hardware WebGL 2 is not supported: ' + results.webGLSupport['webgl2'].hardwareErrorReason + '\n';
+  if (!results.webGLSupport['webgl2'].supported) s += 'Reason why WebGL 2 is not supported: ' + results.webGLSupport['webgl2'].errorReason + '\n';
+  if (results.webGLSupport['webgl1'].hardwareErrorReason) s += 'Reason why hardware WebGL 1 is not supported: ' + results.webGLSupport['webgl1'].hardwareErrorReason + '\n';
+  if (!results.webGLSupport['webgl1'].supported) s += 'Reason why WebGL 1 is not supported: ' + results.webGLSupport['webgl1'].errorReason + '\n';
+
+  return s;
 }

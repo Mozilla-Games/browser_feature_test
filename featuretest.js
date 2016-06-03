@@ -408,7 +408,7 @@ function prettyPrintTestResults(results) {
   if (results.noncontiguousSystemMemory == 3271557120) {
     s += 'Estimated total (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '+\n';
   } else {
-    s += 'Estimated maximum (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '\n';
+    s += 'Estimated total (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '\n';
   }
   s += 'Display refresh rate: ' + results.displayRefreshRate + 'hz\n';
   s += 'window.devicePixelRatio: ' + results.windowDevicePixelRatio + '\n';

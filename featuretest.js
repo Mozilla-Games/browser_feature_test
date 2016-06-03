@@ -60,7 +60,7 @@ function estimateMaxSystemMemory() {
 }
 
 function estimateVSyncRate(completionCallback) {
-  var numFramesToRun = 120;
+  var numFramesToRun = 60;
   var t0 = performance.now();
   var deltas = [];
   function tick() {
@@ -256,7 +256,13 @@ function browserFeatureTest(successCallback) {
   var f64 = new Float64Array(heap);
   var benchmark = CpuBenchmark(window, { performance_now: performance_now }, heap);
   // Do a few measurements
-  var seconds = []; for(var i = 0; i < 100; ++i) seconds.push(benchmark.cpuBenchmark()/1000);
+  var tStart = performance.now();
+  var seconds = [];
+  for(var i = 0; i < 100; ++i) {
+    seconds.push(benchmark.cpuBenchmark()/1000);
+    var tEnd = performance.now();
+    if (tEnd - tStart > 1000) break; // Test cutoff: if the test takes more than one second, bail out from the execution here to keep the test lightweight. (loses some statistical significance)
+  }
   // Take best result as an indicator of CPU performance
   var secondsAvg = seconds.sort()[0];
   // Alternative: remove some outliers & compute the average of the remaining.

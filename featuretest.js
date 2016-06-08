@@ -2,7 +2,7 @@
 // Call the function browserFeatureTest(successCallback) to run the test (see below).
 
 function allocateLargestPossibleContiguousBlock() {
-  var test = [4*1024, 3*1024, 2*1024, 2*1024 - 16, 1024 + 768, 1024 + 512, 1024 + 256, 1024, 768, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1];
+  var test = [4*1024, 3*1024, 2*1024, 2*1024 - 16, 1024 + 768, 1024 + 512, 1024 + 256, 1024, 768, 512, 256, 240, 224, 208, 192, 176, 160, 144, 128, 112, 96, 80, 64, 48, 32, 16, 8, 4, 2, 1];
   for(var t in test) {
     var mem = test[t]*1024*1024;
     try {

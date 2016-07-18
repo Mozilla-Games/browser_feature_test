@@ -142,7 +142,10 @@ function browserFeatureTest(successCallback) {
   storeSupport('SIMD.js', typeof SIMD !== 'undefined');
   storeSupport('Web Workers', typeof Worker !== 'undefined');
   storeSupport('Gamepad API', navigator.getGamepads || navigator.webkitGetGamepads);
-  storeSupport('IndexedDB', typeof indexedDB !== 'undefined');
+  var hasIndexedDB = false;
+  try { hasIndexedDB = typeof indexedDB !== 'undefined'; }
+  catch (e) { hasIndexedDB = false; }
+  storeSupport('IndexedDB', hasIndexedDB);
   storeSupport('Visibility API', typeof document.visibilityState !== 'undefined' || typeof document.hidden !== 'undefined');
   storeSupport('requestAnimationFrame()', typeof requestAnimationFrame !== 'undefined');
   storeSupport('performance.now()', typeof performance !== 'undefined' && performance.now);

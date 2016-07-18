@@ -60,8 +60,13 @@
         &lt;script src="featuretest.js"&gt;&lt;/script&gt;
         &lt;script&gt;
           function onFeatureTestComplete(results) {
+            // Example: how to test for the presence of a certain API
             if (results.supportedApis.indexOf('IndexedDB') != -1) console.log('IndexedDB is supported!');
+
+            // Example: how to find if WebGL comes without a performance caveat.
             if (results.webGLSupport.webgl1.supported &amp;&amp; !results.webGLSupport.webgl1.performanceCaveat) console.log('Hardware-accelerated WebGL is supported!');
+
+            // Example: dump all results as a whitespace-readable JSON string.
             console.log(JSON.stringify(results, null, 2));
           }
           browserFeatureTest(onFeatureTestComplete);

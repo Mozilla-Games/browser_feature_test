@@ -143,8 +143,7 @@ function browserFeatureTest(successCallback) {
   storeSupport('Web Workers', typeof Worker !== 'undefined');
   storeSupport('Gamepad API', navigator.getGamepads || navigator.webkitGetGamepads);
   var hasIndexedDB = false;
-  try { hasIndexedDB = typeof indexedDB !== 'undefined'; }
-  catch (e) { hasIndexedDB = false; }
+  try { hasIndexedDB = typeof indexedDB !== 'undefined'; } catch (e) { hasIndexedDB = false; }
   storeSupport('IndexedDB', hasIndexedDB);
   storeSupport('Visibility API', typeof document.visibilityState !== 'undefined' || typeof document.hidden !== 'undefined');
   storeSupport('requestAnimationFrame()', typeof requestAnimationFrame !== 'undefined');
@@ -202,7 +201,7 @@ function browserFeatureTest(successCallback) {
     if (softwareWebGL1.supported) {
       softwareWebGL1.hardwareErrorReason = webGLSupport['webgl1'].errorReason; // Capture the reason why hardware WebGL 1 context did not succeed.
       webGLSupport['webgl1'] = softwareWebGL1;
-    }    
+    }
   }
 
   storeSupport('WebGL 1', webGLSupport['webgl1'].supported);
@@ -450,14 +449,14 @@ function prettyPrintTestResults(results) {
     if (results.canonicalizesNansInsideAsmModule) {
        s += 'The JS engine canonicalizes NaNs inside the asm.js module to the F32 value ' + results.canonicalF32NanValueInsideAsmModule + ' and F64 value ' + results.canonicalF64NanValueInsideAsmModule + '.\n';
     } else {
-       s += 'The JS engine does not canonicalize NaNs inside the asm.js module.\n';        
+       s += 'The JS engine does not canonicalize NaNs inside the asm.js module.\n';
     }
   }
   if (typeof results.canonicalizesNansOutsideAsmModule !== 'undefined') {
     if (results.canonicalizesNansOutsideAsmModule) {
        s += 'The JS engine canonicalizes NaNs outside the asm.js module to the F32 value ' + results.canonicalF32NanValueOutsideAsmModule + ' and F64 value ' + results.canonicalF64NanValueOutsideAsmModule + '.\n';
     } else {
-       s += 'The JS engine does not canonicalize NaNs outside the asm.js module.\n';        
+       s += 'The JS engine does not canonicalize NaNs outside the asm.js module.\n';
     }
   }
 

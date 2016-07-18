@@ -89,6 +89,16 @@ Date.prototype.yyyymmddhhmm = function() {
    return yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + min;
   };
 
+Date.prototype.yyyymmddhhmmss = function() {
+   var yyyy = this.getFullYear();
+   var mm = this.getMonth() < 9 ? "0" + (this.getMonth() + 1) : (this.getMonth() + 1); // getMonth() is zero-based
+   var dd  = this.getDate() < 10 ? "0" + this.getDate() : this.getDate();
+   var hh = this.getHours() < 10 ? "0" + this.getHours() : this.getHours();
+   var min = this.getMinutes() < 10 ? "0" + this.getMinutes() : this.getMinutes();
+   var sec = this.getSeconds() < 10 ? "0" + this.getSeconds() : this.getSeconds();
+   return yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + min + ':' + sec;
+  };
+
 var displayRefreshRate = -1; // Global value that is asynchronously computed (once), and then reported directly.
 
 function padLengthRight(s, len, ch) {
@@ -312,7 +322,7 @@ function browserFeatureTest(successCallback) {
 
   var results = {
     featureTestVersion: '1', // The version number for featuretest.js itself.
-    runDate: new Date().yyyymmddhhmm(),
+    runDate: new Date().yyyymmddhhmmss(),
     userAgent: navigator.userAgent,
     buildID: navigator.buildID,
     appVersion: navigator.appVersion,
@@ -465,4 +475,12 @@ function prettyPrintTestResults(results) {
   if (!results.webGLSupport['webgl1'].supported) s += 'Reason why WebGL 1 is not supported: ' + results.webGLSupport['webgl1'].errorReason + '\n';
 
   return s;
+}
+
+// Identical to browserFeatureTest(), but returns a Promise.
+function browserFeatureTestAsPromise() {
+  var promise = new Promise(function(resolve, reject) {
+    browserFeatureTest(resolve);
+  });
+  return promise;
 }

@@ -23,6 +23,28 @@
         <li><b>appVersion</b>: passes <i>navigator.appVersion</i>.
         <li><b>platform</b>: passes <i>navigator.platform</i>.
         <li><b>userAgent</b>: passes <i>navigator.userAgent</i>.
+        <li>From the user agent string, several heuristic guesses are made to deduce human-readable information about the browser. This information is carried in the <b>userAgentExplained</b> object:
+          <ul>
+          <li><b>userAgentExplained.platform</b>: Makes a guess of the user's specific hardware platform, e.g. 'PC', 'Mac', 'iPhone', 'iPad', 'Nexus', 'Samsung' and so on.
+          <li><b>userAgentExplained.bitness</b>: Specifies the browser and operating system CPU bit width. This is either 32, 64, or '32-on-64' if running a 32bit browser on a 64bit OS.
+          <li><b>userAgentExplained.arch</b>: Tries to determine the CPU architecture of the current system.
+          <li><b>userAgentExplained.formFactor</b>: One of 'Desktop', 'Mobile', 'Tablet' or 'TV'.
+          <li><b>userAgentExplained.os</b>: Name of the user's operating system (e.g. 'Windows', 'Mac OS', 'Linux', 'Android', 'iOS')
+          <li><b>userAgentExplained.osVersion</b>: Version number or name of the OS.
+          <li><b>userAgentExplained.browserVendor</b>: Name of the company who authored the browser: 'Mozilla', 'Google', 'Microsoft', 'Apple'. Note that this could also be 'Opera' or 'Samsung' for companies who are distributing variants of Chrome. See the <b>userAgentExplained.productComponents</b> field if there is a need to distinguish Chromium-based browsers specifically.
+          <li><b>userAgentExplained.browserProduct</b>: Marketing name for the browser: 'Firefox', 'Edge', 'Internet Explorer', 'Safari', 'Chrome', ...
+          <li><b>userAgentExplained.productComponents</b>: A tokenized array of <b>product name</b>, <b>version</b> pairs which determine the compatibility of the browser.
+          </ul>
+        <li><b>vendor</b>: passes <i>navigator.vendor</i>.
+        <li><b>vendorSub</b>: passes <i>navigator.vendorSub</i>.
+        <li><b>product</b>: passes <i>navigator.product</i>.
+        <li><b>productSub</b>: passes <i>navigator.productSub</i>.
+        <li><b>language</b>: passes <i>navigator.language</i>.
+        <li><b>appCodeName</b>: passes <i>navigator.appCodeName</i>.
+        <li><b>appName</b>: passes <i>navigator.appName</i>.
+        <li><b>maxTouchPoints</b>: passes <i>navigator.maxTouchPoints</i>.
+        <li><b>pointerEnabled</b>: passes <i>navigator.pointerEnabled</i>.
+        <li><b>cpuClass</b>: passes <i>navigator.cpuClass</i>.
         <li><b>contiguousSystemMemory</b>: The maximum amount of memory that JavaScript code is able to allocate in one contiguous block, in bytes. The maximum contiguous allocation size is 2GB.
         <li><b>noncontiguousSystemMemory</b>: The maximum amount of memory that JavaScript code is able to allocate in multiple blocks, in bytes. This memory size is reported only up to 3GB, more available memory past that amount is not tested.
         <li><b>displayRefreshRate</b>: measures the rate at which the requestAnimationFrame() callbacks ticks forward, i.e. the vsync rate of the display.

@@ -18,6 +18,12 @@ function contains(str, substr) {
   return str.indexOf(substr) >= 0;
 }
 
+// Returns true if the any of the given substrings in the list is contained in the first parameter string (case sensitive)
+function containsAnyOf(str, substrList) {
+  for(var i in substrList) if (contains(str, substrList[i])) return true;
+  return false;
+}
+
 // Splits an user agent string logically into an array of tokens, e.g.
 // 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5 Build/MOB30M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.81 Mobile Safari/537.36'
 // -> ['Mozilla/5.0', '(Linux; Android 6.0.1; Nexus 5 Build/MOB30M)', 'AppleWebKit/537.36 (KHTML, like Gecko)', 'Chrome/51.0.2704.81', 'Mobile Safari/537.36']
@@ -46,7 +52,7 @@ function splitUserAgent(str) {
   // -> fuse 'AppleWebKit/537.36' and '(KHTML, like Gecko)' together
   for(var i = 1; i < uaList.length; ++i) {
     var l = uaList[i];
-    if (isEnclosedInParens(l) && !contains(l, ';')) {
+    if (isEnclosedInParens(l) && !contains(l, ';') && i > 1) {
       uaList[i-1] = uaList[i-1] + ' ' + l;
       uaList[i] = '';
     }
@@ -75,7 +81,7 @@ function splitUserAgent(str) {
 function splitPlatformInfo(uaList) {
   for(var i = 0; i < uaList.length; ++i) {
     var item = uaList[i];
-    if (isEnclosedInParens(item) && contains(item, ';')) {
+    if (isEnclosedInParens(item)) {
       return removeEmptyElements(trimSpacesInEachElement(item.substr(1, item.length-2).split(';')));
     }
   }
@@ -95,17 +101,6 @@ function findOS(uaPlatformInfo) {
 
 // Deduces the browser and OS bitness from the user agent string.
 function findBitness(userAgent) {
-  userAgent = userAgent.toLowerCase();
-  var b32On64 = ['wow64'];
-  for(var b in b32On64) if (contains(userAgent, b32On64[b])) return '32-on-64';
-  var b64 = ['x86_64', 'amd64', 'ia64', 'ppc64', 'win64', 'x64', 'sparc64'];
-  for(var b in b64) if (contains(userAgent, b64[b])) return 64;
-  var b32 = ['i386', 'i486', 'i586', 'i686', 'x86'];
-  for(var b in b32) if (contains(userAgent, b32[b])) return 32;
-  // Heuristic: Assume all OS X are 64-bit, although this is not certain. On OS X, 64-bit browsers
-  // don't advertise being 64-bit.
-  if (contains(userAgent, 'intel mac os')) return 64; 
-  else return 32;
 }
 
 // Filters the product components (items of format 'foo/version') from the user agent token list.
@@ -124,24 +119,70 @@ function parseProductComponents(uaList) {
   return productComponents;
 }
 
+// Maps Windows NT version to human-readable Windows Product version
+function windowsDistributionName(winNTVersion) {
+  var vers = {
+    '5.0': '2000',
+    '5.1': 'XP',
+    '5.2': 'XP',
+    '6.0': 'Vista',
+    '6.1': '7',
+    '6.2': '8',
+    '6.3': '8.1',
+    '10.0': '10'
+  }
+  if (!vers[winNTVersion]) return 'NT ' + winNTVersion;
+  return vers[winNTVersion];
+}
+
 // The full function to decompose a given user agent to the interesting logical info bits.
 function deduceUserAgent(userAgent) {
   var uaList = splitUserAgent(userAgent);
   var uaPlatformInfo = splitPlatformInfo(uaList);
   var productComponents = parseProductComponents(uaList);
+  var ual = userAgent.toLowerCase();
+
   var ua = {
     userAgent: userAgent,
-    platform: '?',
-    arch: '?',
-    bitness: findBitness(userAgent),
-    formFactor: 'Desktop',
-    os: '?',
-    osVersion: '?',
-    browserVendor: '?',
-    browserProduct: '?',
-    browserVersion: '?',
+    platform: undefined,
+    bitness: undefined,
+    arch: undefined,
+    formFactor: undefined,
+    os: undefined,
+    osVersion: undefined,
+    browserVendor: undefined,
+    browserProduct: undefined,
+    browserVersion: undefined,
     productComponents: productComponents
   };
+  // Deduce arch and bitness
+  var b32On64 = ['wow64'];
+  if (contains(ual, 'wow64')) {
+    ua.bitness = '32-on-64';
+    ua.arch = 'x86_64';
+  } else if (containsAnyOf(ual, ['x86_64', 'amd64', 'ia64', 'win64', 'x64'])) {
+    ua.bitness = 64;
+    ua.arch = 'x86_64';
+  } else if (contains(ual, 'ppc64')) {
+    ua.bitness = 64;
+    ua.arch = 'PPC';
+  } else if (contains(ual, 'sparc64')) {
+    ua.bitness = 64;
+    ua.arch = 'SPARC';
+  } else if (containsAnyOf(ual, ['i386', 'i486', 'i586', 'i686', 'x86'])) {
+    ua.bitness = 32;
+    ua.arch = 'x86';
+  } else if (contains(ual, 'arm7') || contains(ual, 'android') || contains(ual, 'mobile')) {
+    ua.bitness = 32;
+    ua.arch = 'ARM';
+  // Heuristic: Assume all OS X are 64-bit, although this is not certain. On OS X, 64-bit browsers
+  // don't advertise being 64-bit.
+  } else if (contains(ual, 'intel mac os')) {
+    ua.bitness = 64;
+    ua.arch = 'x86_64';
+  } else {
+    ua.bitness = 32;
+  }
 
   // Deduce operating system
   var os = findOS(uaPlatformInfo);
@@ -155,8 +196,26 @@ function deduceUserAgent(userAgent) {
   if (!m) {
     m = os.match('Android\\s+(.*)');
     if (m) {
+      ua.platform = 'Android';
       ua.os = 'Android';
       ua.osVersion = m[1];
+    }
+  }
+  if (!m) {
+    m = os.match('Windows NT\\s+(.*)');
+    if (m) {
+      ua.platform = 'PC';
+      ua.os = 'Windows';
+      ua.osVersion = windowsDistributionName(m[1]);
+      if (!ua.arch) ua.arch = 'x86';
+    }
+  }
+  if (!m) {
+    m = contains(os, 'BSD') || contains(os, 'Linux');
+    if (m) {
+      ua.platform = 'PC';
+      ua.os = os.split(' ')[0];
+      if (!ua.arch) ua.arch = 'x86';
     }
   }
   if (!m) {
@@ -164,13 +223,14 @@ function deduceUserAgent(userAgent) {
   }
 
   // Deduce human-readable browser vendor, product and version names
-  browsers = [['Chrome', 'Google'], ['Safari', 'Apple'], ['Firefox', 'Mozilla']];
+  browsers = [['SamsungBrowser', 'Samsung'], ['Edge', 'Microsoft'], ['OPR', 'Opera'], ['Chrome', 'Google'], ['Safari', 'Apple'], ['Firefox', 'Mozilla']];
   for(var i in browsers) {
     var b = browsers[i][0];
     var j = productComponents.indexOf(b);
     if (j != -1) {
       ua.browserVendor = browsers[i][1];
       ua.browserProduct = browsers[i][0];
+      if (ua.browserProduct == 'OPR') ua.browserProduct = 'Opera';
       ua.browserVersion = productComponents[j+1];
       break;
     }
@@ -179,7 +239,8 @@ function deduceUserAgent(userAgent) {
   // Deduce mobile platform, if present
   for(var i = 0; i < uaPlatformInfo.length; ++i) {
     var item = uaPlatformInfo[i];
-    if (contains(item, 'Nexus')) {
+    var iteml = item.toLowerCase();
+    if (contains(iteml, 'nexus') || contains(iteml, 'samsung')) {
       ua.platform = item;
       ua.arch = 'ARM';
       break;
@@ -187,9 +248,10 @@ function deduceUserAgent(userAgent) {
   }
 
   // Deduce form factor
-  var ual = userAgent.toLowerCase();
   if (contains(ual, 'tablet') || contains(ual, 'ipad')) ua.formFactor = 'Tablet';
   else if (contains(ual, 'mobile') || contains(ual, 'iphone') || contains(ual, 'ipod')) ua.formFactor = 'Mobile';
+  else if (contains(ual, 'smart tv') || contains(ual, 'smart-tv')) ua.formFactor = 'TV';
+  else ua.formFactor = 'Desktop';
 
   return ua;
 }
@@ -248,8 +310,140 @@ var tests = [
     browserVersion: '51.0.2704.81',
     productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '51.0.2704.81', 'Mobile Safari', '537.36']
   },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36 OPR/38.0.2220.41',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: '32-on-64',
+    os: 'Windows',
+    osVersion: '10',
+    browserVendor: 'Opera',
+    browserProduct: 'Opera',
+    browserVersion: '38.0.2220.41',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '51.0.2704.106', 'Safari', '537.36', 'OPR', '38.0.2220.41']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: '32-on-64',
+    os: 'Windows',
+    osVersion: '10',
+    browserVendor: 'Google',
+    browserProduct: 'Chrome',
+    browserVersion: '51.0.2704.103',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '51.0.2704.103', 'Safari', '537.36']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: '32-on-64',
+    os: 'Windows',
+    osVersion: '10',
+    browserVendor: 'Mozilla',
+    browserProduct: 'Firefox',
+    browserVersion: '48.0',
+    productComponents: ['Mozilla', '5.0', 'Gecko', '20100101', 'Firefox', '48.0']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:51.0) Gecko/20100101 Firefox/51.0',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: 64,
+    os: 'Windows',
+    osVersion: '10',
+    browserVendor: 'Mozilla',
+    browserProduct: 'Firefox',
+    browserVersion: '51.0',
+    productComponents: ['Mozilla', '5.0', 'Gecko', '20100101', 'Firefox', '51.0']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: 64,
+    os: 'Windows',
+    osVersion: '10',
+    browserVendor: 'Microsoft',
+    browserProduct: 'Edge',
+    browserVersion: '13.10586',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '46.0.2486.0', 'Safari', '537.36', 'Edge', '13.10586']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+    platform: 'PC',
+    arch: 'x86',
+    formFactor: 'Desktop',
+    bitness: 32,
+    os: 'Windows',
+    osVersion: '7',
+    browserVendor: 'Google',
+    browserProduct: 'Chrome',
+    browserVersion: '41.0.2228.0',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '41.0.2228.0', 'Safari', '537.36']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: 64,
+    os: 'Linux',
+    osVersion: undefined,
+    browserVendor: 'Google',
+    browserProduct: 'Chrome',
+    browserVersion: '41.0.2227.0',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '41.0.2227.0', 'Safari', '537.36']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (X11; OpenBSD i386) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36',
+    platform: 'PC',
+    arch: 'x86',
+    formFactor: 'Desktop',
+    bitness: 32,
+    os: 'OpenBSD',
+    osVersion: undefined,
+    browserVendor: 'Google',
+    browserProduct: 'Chrome',
+    browserVersion: '36.0.1985.125',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'Chrome', '36.0.1985.125', 'Safari', '537.36']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG SM-G935F Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/44.0.2403.133 Mobile Safari/537.36',
+    platform: 'SAMSUNG SM-G935F Build/MMB29K',
+    arch: 'ARM',
+    formFactor: 'Mobile',
+    bitness: 32,
+    os: 'Android',
+    osVersion: '6.0.1',
+    browserVendor: 'Samsung',
+    browserProduct: 'SamsungBrowser',
+    browserVersion: '4.0',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.36 (KHTML, like Gecko)', 'SamsungBrowser', '4.0', 'Chrome', '44.0.2403.133', 'Mobile Safari', '537.36']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (Android 6.0.1; Mobile; rv:47.0) Gecko/47.0 Firefox/47.0',
+    platform: 'Android',
+    arch: 'ARM',
+    formFactor: 'Mobile',
+    bitness: 32,
+    os: 'Android',
+    osVersion: '6.0.1',
+    browserVendor: 'Mozilla',
+    browserProduct: 'Firefox',
+    browserVersion: '47.0',
+    productComponents: ['Mozilla', '5.0', 'Gecko', '47.0', 'Firefox', '47.0']
+  },
 ];
 
+
+// Run tests
 for(var i in tests) {
   var ua = tests[i];
   var detectedUa = deduceUserAgent(ua.userAgent);

@@ -71,7 +71,6 @@ function splitUserAgent(str) {
     }
   }
   uaList = removeEmptyElements(uaList);
-
   return uaList;
 }
 
@@ -242,8 +241,22 @@ function deduceUserAgent(userAgent) {
       ua.browserVendor = browsers[i][1];
       ua.browserProduct = browsers[i][0];
       if (ua.browserProduct == 'OPR') ua.browserProduct = 'Opera';
+      if (ua.browserProduct == 'Trident') ua.browserProduct = 'Internet Explorer';
       ua.browserVersion = productComponents[j+1];
       break;
+    }
+  }
+  // Detect IEs
+  if (!ua.browserProduct) {
+    var matchIE = userAgent.match(/MSIE\s([\d.]+)/);
+    if (matchIE) {
+      ua.browserVendor = 'Microsoft';
+      ua.browserProduct = 'Internet Explorer';
+      ua.browserVersion = matchIE[1];
+    } else if (contains(uaPlatformInfo, 'Trident/7.0')) {
+      ua.browserVendor = 'Microsoft';
+      ua.browserProduct = 'Internet Explorer';
+      ua.browserVersion =  userAgent.match(/rv:([\d.]+)/)[1];
     }
   }
 
@@ -477,8 +490,33 @@ var tests = [
     browserVersion: '9537.53',
     productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.51.1 (KHTML, like Gecko)', 'Version', '7.0', 'Mobile', '11A501', 'Safari', '9537.53']
   },
+  {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    platform: 'PC',
+    arch: 'x86_64',
+    formFactor: 'Desktop',
+    bitness: '32-on-64',
+    os: 'Windows',
+    osVersion: '10',
+    browserVendor: 'Microsoft',
+    browserProduct: 'Internet Explorer',
+    browserVersion: '11.0',
+    productComponents: ['Mozilla', '5.0']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)',
+    platform: 'PC',
+    arch: 'x86',
+    formFactor: 'Desktop',
+    bitness: '32',
+    os: 'Windows',
+    osVersion: '7',
+    browserVendor: 'Microsoft',
+    browserProduct: 'Internet Explorer',
+    browserVersion: '10.0',
+    productComponents: ['Mozilla', '5.0']
+  },
 ];
-
 
 // Run tests
 for(var i in tests) {

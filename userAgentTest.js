@@ -211,6 +211,17 @@ function deduceUserAgent(userAgent) {
     }
   }
   if (!m) {
+    if (uaPlatformInfo[0] == 'iPhone' || uaPlatformInfo[0] == 'iPad' || uaPlatformInfo[0] == 'iPod' || contains(os, 'iPhone') || os.indexOf('CPU OS') == 0) {
+      m = os.match('.*OS (.*) like Mac OS X');
+      if (m) {
+        ua.platform = uaPlatformInfo[0];
+        ua.os = 'iOS';
+        ua.osVersion = m[1].replace(/_/g, '.');
+        ua.bitness = parseInt(ua.osVersion) >= 7 ? 64 : 32;
+      }
+    }
+  }  
+  if (!m) {
     m = contains(os, 'BSD') || contains(os, 'Linux');
     if (m) {
       ua.platform = 'PC';
@@ -439,6 +450,32 @@ var tests = [
     browserProduct: 'Firefox',
     browserVersion: '47.0',
     productComponents: ['Mozilla', '5.0', 'Gecko', '47.0', 'Firefox', '47.0']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3',
+    platform: 'iPhone',
+    arch: 'ARM',
+    formFactor: 'Mobile',
+    bitness: 32,
+    os: 'iOS',
+    osVersion: '5.0',
+    browserVendor: 'Apple',
+    browserProduct: 'Safari',
+    browserVersion: '7534.48.3',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '534.46 (KHTML, like Gecko)', 'Version', '5.1', 'Mobile', '9A334', 'Safari', '7534.48.3']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (iPad; CPU OS 7_0_2 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A501 Safari/9537.53',
+    platform: 'iPad',
+    arch: 'ARM',
+    formFactor: 'Tablet',
+    bitness: 64,
+    os: 'iOS',
+    osVersion: '7.0.2',
+    browserVendor: 'Apple',
+    browserProduct: 'Safari',
+    browserVersion: '9537.53',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.51.1 (KHTML, like Gecko)', 'Version', '7.0', 'Mobile', '11A501', 'Safari', '9537.53']
   },
 ];
 

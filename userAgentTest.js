@@ -210,7 +210,7 @@ function deduceUserAgent(userAgent) {
     }
   }
   if (!m) {
-    if (uaPlatformInfo[0] == 'iPhone' || uaPlatformInfo[0] == 'iPad' || uaPlatformInfo[0] == 'iPod' || contains(os, 'iPhone') || os.indexOf('CPU OS') == 0) {
+    if (contains(uaPlatformInfo[0], 'iPhone') || contains(uaPlatformInfo[0], 'iPad') || contains(uaPlatformInfo[0], 'iPod') || contains(os, 'iPhone') || os.indexOf('CPU OS') == 0) {
       m = os.match('.*OS (.*) like Mac OS X');
       if (m) {
         ua.platform = uaPlatformInfo[0];
@@ -515,6 +515,19 @@ var tests = [
     browserProduct: 'Internet Explorer',
     browserVersion: '10.0',
     productComponents: ['Mozilla', '5.0']
+  },
+  {
+    userAgent: 'Mozilla/5.0 (iPod touch; CPU iPhone OS 7_0_3 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11B511 Safari/9537.53',
+    platform: 'iPod touch',
+    arch: 'ARM',
+    formFactor: 'Mobile',
+    bitness: '64',
+    os: 'iOS',
+    osVersion: '7.0.3',
+    browserVendor: 'Apple',
+    browserProduct: 'Safari',
+    browserVersion: '9537.53',
+    productComponents: ['Mozilla', '5.0', 'AppleWebKit', '537.51.1 (KHTML, like Gecko)', 'Version', '7.0', 'Mobile', '11B511', 'Safari', '9537.53']
   },
 ];
 

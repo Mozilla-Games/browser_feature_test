@@ -14,49 +14,12 @@ function allocateLargestPossibleContiguousBlock() {
       for(var i = 0; i < v.length/1024/1024; ++i) {
         v[i*1024*1024] = i;
       }
-      return a;
+      return a.byteLength;
     } catch(e) {
       // pass
     }
   }
-  return null;
-}
-
-function estimateMaxSystemMemory() {
-  var contiguousBlock = allocateLargestPossibleContiguousBlock();
-  if (!contiguousBlock) {
-    return {
-      contiguous: 0,
-      noncontiguous: 0
-    };
-  }
-  var contiguousSizeMBytes = contiguousBlock.byteLength/(1024*1024);
-  var noncontiguousBlocks = [];
-  var blockSizeMBytes = 32;
-  var blocks = [];
-  // Try up to 3GB:
-  var numTriedAllocations = (3*1024 - contiguousSizeMBytes + blockSizeMBytes - 1) / blockSizeMBytes;
-  for(var j = 0; j < numTriedAllocations; ++j) {
-    try {
-      var bytes = blockSizeMBytes * 1024 * 1024;
-      var a = new ArrayBuffer(bytes);
-      if (a.byteLength != bytes) break; // browser bugs..
-
-      // Touch memory
-      var v = new Float64Array(a);
-      for(var i = 0; i < v.length/1024/1024; ++i) {
-        v[i*1024*1024] = i;
-      }
-      blocks.push(a);
-    } catch(e) {
-      break;
-    }
-  }
-
-  return {
-    contiguous: contiguousBlock.byteLength,
-    noncontiguous: contiguousBlock.byteLength + (blockSizeMBytes*1024*1024) * blocks.length
-  };
+  return 0;
 }
 
 function estimateVSyncRate(completionCallback) {
@@ -602,8 +565,6 @@ function browserFeatureTest(successCallback) {
   var canonicalF32NanValueOutsideAsmModule = '0x' + padLengthLeft(u32[1].toString(16), 8, '0');
   var canonicalF64NanValueOutsideAsmModule = '0x' + padLengthLeft(u32[5].toString(16), 8, '0') + padLengthLeft(u32[4].toString(16), 8, '0');
 
-  var availableMemory = estimateMaxSystemMemory();
-
   var results = {
     featureTestVersion: '2', // The version number for featuretest.js itself.
     runDate: new Date().yyyymmddhhmmss(),
@@ -614,8 +575,7 @@ function browserFeatureTest(successCallback) {
     mozE10sEnabled: navigator.mozE10sEnabled,
     oscpu: navigator.oscpu,
     platform: navigator.platform,
-    contiguousSystemMemory: availableMemory.contiguous,
-    noncontiguousSystemMemory: availableMemory.noncontiguous,
+    contiguousSystemMemory: allocateLargestPossibleContiguousBlock(),
     displayRefreshRate: displayRefreshRate, // Will be asynchronously filled in on first run, directly filled in later.
     windowDevicePixelRatio: window.devicePixelRatio,
     screenWidth: screen.width,

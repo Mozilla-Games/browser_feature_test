@@ -1,7 +1,14 @@
 // featuretest.js: Small test code to perform feature testing of browser capabilities.
 // Call the function browserFeatureTest(successCallback) to run the test (see below).
 
-function allocateLargestPossibleContiguousBlock() {
+// userAgentExplained: Pass in the result from deduceUserAgent() here.
+function allocateLargestPossibleContiguousBlock(userAgentExplained) {
+  // Workaround https://github.com/Mozilla-Games/browser_feature_test/issues/4
+  if (userAgentExplained.productComponents['Chrome'] && parseInt(userAgentExplained.productComponents['Chrome'].split('.')[0]) <= 52) {
+    console.warn('allocateLargestPossibleContiguousBlock() test disabled to work around Chrome crash bug');
+    return -1;
+  }
+
   var test = [4*1024, 3*1024, 2*1024, 2*1024 - 16, 1024 + 768, 1024 + 512, 1024 + 256, 1024, 768, 512, 256, 240, 224, 208, 192, 176, 160, 144, 128, 112, 96, 80, 64, 48, 32, 16, 8, 4, 2, 1];
   for(var t in test) {
     var mem = test[t]*1024*1024;
@@ -565,17 +572,19 @@ function browserFeatureTest(successCallback) {
   var canonicalF32NanValueOutsideAsmModule = '0x' + padLengthLeft(u32[1].toString(16), 8, '0');
   var canonicalF64NanValueOutsideAsmModule = '0x' + padLengthLeft(u32[5].toString(16), 8, '0') + padLengthLeft(u32[4].toString(16), 8, '0');
 
+  var userAgentExplained = deduceUserAgent(navigator.userAgent);
+
   var results = {
     featureTestVersion: '2', // The version number for featuretest.js itself.
     runDate: new Date().yyyymmddhhmmss(),
     userAgent: navigator.userAgent,
-    userAgentExplained: deduceUserAgent(navigator.userAgent),
+    userAgentExplained: userAgentExplained,
     buildID: navigator.buildID,
     appVersion: navigator.appVersion,
     mozE10sEnabled: navigator.mozE10sEnabled,
     oscpu: navigator.oscpu,
     platform: navigator.platform,
-    contiguousSystemMemory: allocateLargestPossibleContiguousBlock(),
+    contiguousSystemMemory: allocateLargestPossibleContiguousBlock(userAgentExplained),
     displayRefreshRate: displayRefreshRate, // Will be asynchronously filled in on first run, directly filled in later.
     windowDevicePixelRatio: window.devicePixelRatio,
     screenWidth: screen.width,

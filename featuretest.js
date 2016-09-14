@@ -9,7 +9,25 @@ function allocateLargestPossibleContiguousBlock(userAgentExplained) {
     return -1;
   }
 
-  var test = [4*1024, 3*1024, 2*1024, 2*1024 - 16, 1024 + 768, 1024 + 512, 1024 + 256, 1024, 768, 512, 256, 240, 224, 208, 192, 176, 160, 144, 128, 112, 96, 80, 64, 48, 32, 16, 8, 4, 2, 1];
+  var test = [];
+
+  var testHuge = [4*1024, 3*1024, 2*1024]; // These are not expected to work.
+  var testLarge = [2*1024 - 16, 1024 + 768, 1024 + 512, 1024 + 256, 1024, 768, 640];
+  var testSmall = [512, 384, 320, 256, 240, 224, 208, 192, 176, 160, 144, 128, 112, 96, 80, 64, 48, 32, 16, 8, 4, 2, 1];
+
+  // Only test larger than 2GB on 64-bit desktops. Current web impls don't really allow these sizes to work, but be forward-looking.
+  if (userAgentExplained.formFactor == 'Desktop' && userAgentExplained.bitness == 64) {
+    test = test.concat(testHuge);
+  }
+
+  // Test large sizes on all desktops.
+  if (userAgentExplained.formFactor == 'Desktop') {
+    test = test.concat(testLarge);
+  }
+
+  // Mobiles only test small 32-bit.
+  test = test.concat(testSmall);
+
   for(var t in test) {
     var mem = test[t]*1024*1024;
     try {

@@ -714,12 +714,6 @@ function prettyPrintTestResults(results) {
   }
   var contiguousSystemMemory = Math.round(results.contiguousSystemMemory/1024/1024) + 'MB';
   s += 'Estimated maximum contiguously allocatable system memory for asm.js heap: ' + contiguousSystemMemory + '\n';
-  var noncontiguousSystemMemory = Math.round(results.noncontiguousSystemMemory/1024/1024) + 'MB';
-  if (results.noncontiguousSystemMemory == 3271557120) {
-    s += 'Estimated total (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '+\n';
-  } else {
-    s += 'Estimated total (noncontiguously) allocatable system memory: ' + noncontiguousSystemMemory + '\n';
-  }
   s += 'Display refresh rate: ' + results.displayRefreshRate + 'hz\n';
   s += 'window.devicePixelRatio: ' + results.windowDevicePixelRatio + '\n';
   s += 'display resolution in CSS pixels (screen.width x screen.height): ' + results.screenWidth + 'x' + results.screenHeight + '\n';

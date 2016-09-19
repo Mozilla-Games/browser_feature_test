@@ -4,8 +4,13 @@
 // userAgentExplained: Pass in the result from deduceUserAgent() here.
 function allocateLargestPossibleContiguousBlock(userAgentExplained) {
   // Workaround https://github.com/Mozilla-Games/browser_feature_test/issues/4
-  if (userAgentExplained.productComponents['Chrome'] && parseInt(userAgentExplained.productComponents['Chrome'].split('.')[0]) <= 52) {
-    console.warn('allocateLargestPossibleContiguousBlock() test disabled to work around Chrome crash bug');
+  if (userAgentExplained.productComponents['Chrome']) {
+    console.warn('allocateLargestPossibleContiguousBlock() test disabled to work around Chrome crash bug.'); // Still occurring in latest Chrome 53, so disabled altogether: https://bugs.chromium.org/p/chromium/issues/detail?id=536816#c23
+    return -1;
+  }
+
+  if (userAgentExplained.productComponents['Safari'] && parseInt(userAgentExplained.productComponents['Safari'].split('.')[0]) < 601) {
+    console.warn('allocateLargestPossibleContiguousBlock() test disabled to work around Safari crash bug. Works in iOS 9.3.4 and newer with Safari 601.1.');
     return -1;
   }
 

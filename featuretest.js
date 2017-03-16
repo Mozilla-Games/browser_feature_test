@@ -414,6 +414,7 @@ function browserFeatureTest(successCallback) {
   storeSupport('navigator.hardwareConcurrency', typeof navigator.hardwareConcurrency !== 'undefined');
   storeSupport('SIMD.js', typeof SIMD !== 'undefined');
   storeSupport('Web Workers', typeof Worker !== 'undefined');
+  storeSupport('WebAssembly', typeof WebAssembly !== 'undefined');
   storeSupport('Gamepad API', navigator.getGamepads || navigator.webkitGetGamepads);
   var hasIndexedDB = false;
   try { hasIndexedDB = typeof indexedDB !== 'undefined'; } catch (e) { hasIndexedDB = false; }

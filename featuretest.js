@@ -493,7 +493,7 @@ function browserFeatureTest(successCallback) {
     function cpuBenchmark() {
       var t0 = 0.0, t1 = 0.0, i = 0, a = 0, b = 0, c = 0;
       a = performance_now()|0; b = performance_now()|0; c = performance_now()|0; t0 = +performance_now(); i = 0;
-      do { a = a + c | 0; b = b + a | 0; c = c + b | 0; a = a + c | 0; b = b + a | 0; c = c + b | 0; a = a + c | 0; b = b + a | 0; c = c + b | 0; i = i + 1 | 0; } while((i | 0) != 1048576);
+      do { a = a + c | 0; b = b + a | 0; c = c + b | 0; a = a + c | 0; b = b + a | 0; c = c + b | 0; a = a + c | 0; b = b + a | 0; c = c + b | 0; i = i + 1 | 0; } while((i | 0) != 131072);
       t1 = +performance_now(); i32[0>>2] = c; return t1 - t0;
     }
 
@@ -544,7 +544,7 @@ function browserFeatureTest(successCallback) {
   // Do a few measurements
   var tStart = performance.now();
   var seconds = [];
-  for(var i = 0; i < 100; ++i) {
+  for(var i = 0; i < 20; ++i) {
     seconds.push(benchmark.cpuBenchmark()/1000);
     var tEnd = performance.now();
     if (tEnd - tStart > 1000) break; // Test cutoff: if the test takes more than one second, bail out from the execution here to keep the test lightweight. (loses some statistical significance)
@@ -554,7 +554,7 @@ function browserFeatureTest(successCallback) {
   // Alternative: remove some outliers & compute the average of the remaining.
 //    seconds = seconds.sort().slice(30, 75); var secondsAvg = 0; for(var i in seconds) secondsAvg += seconds[i]; secondsAvg /= seconds.length;
   // Compute MIPS performance count
-  var instructions = 1048576/*# of loop iterations*/ * 10/*# of adds in iteration*/;
+  var instructions = 131072/*# of loop iterations*/ * 10/*# of adds in iteration*/;
   var singleCoreMips = Math.round(instructions / secondsAvg / 1000000/*ips->mips*/);
 
   // Outside asm.js module

@@ -1,3 +1,5 @@
+// This file contains unit tests for detecting information from the user agent string. Deploying this file to CDN is not needed.
+
 // Do a hacky import of featuretest.js to keep it from having to be aware of node.js environment:
 var fs = require('fs');
 eval(fs.readFileSync('featuretest.js')+'');

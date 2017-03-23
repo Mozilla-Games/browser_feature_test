@@ -639,6 +639,7 @@ function browserFeatureTest(successCallback) {
     results.GL_RENDERER = bestGLContext.getParameter(bestGLContext.RENDERER);
     results.GL_VERSION = bestGLContext.getParameter(bestGLContext.VERSION);
     results.GL_SHADING_LANGUAGE_VERSION = bestGLContext.getParameter(bestGLContext.SHADING_LANGUAGE_VERSION);
+    results.GL_MAX_TEXTURE_IMAGE_UNITS = bestGLContext.getParameter(bestGLContext.MAX_TEXTURE_IMAGE_UNITS);
 
     var WEBGL_debug_renderer_info = bestGLContext.getExtension('WEBGL_debug_renderer_info');
     if (WEBGL_debug_renderer_info) {
@@ -750,6 +751,7 @@ function prettyPrintTestResults(results) {
     s += 'GL_RENDERER: ' + results.GL_RENDERER + '\n';
     s += 'GL_VERSION: ' + results.GL_VERSION + '\n';
     s += 'GL_SHADING_LANGUAGE_VERSION: ' + results.GL_SHADING_LANGUAGE_VERSION + '\n';
+    s += 'GL_MAX_TEXTURE_IMAGE_UNITS: ' + results.GL_MAX_TEXTURE_IMAGE_UNITS + '\n';
     if (results.GL_UNMASKED_VENDOR_WEBGL) s += 'GL_UNMASKED_VENDOR_WEBGL: ' + results.GL_UNMASKED_VENDOR_WEBGL + '\n';
     if (results.GL_UNMASKED_RENDERER_WEBGL) s += 'GL_UNMASKED_RENDERER_WEBGL: ' + results.GL_UNMASKED_RENDERER_WEBGL + '\n';
     s += 'WebGL extensions:\n    ' + results.supportedWebGLExtensions.join('\n    ') + '\n';

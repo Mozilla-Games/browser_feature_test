@@ -428,6 +428,7 @@ function browserFeatureTest(successCallback) {
   storeSupport('Screen Orientation API', window.screen && (window.screen.orientation || window.screen.mozOrientation || window.screen.webkitOrientation || window.screen.msOrientation));
   storeSupport('Geolocation API', navigator.geolocation);
   storeSupport('Battery Status API', navigator.getBattery);
+  storeSupport('WebAssembly', typeof WebAssembly !== 'undefined');
 
   var webGLSupport = {};
   var bestGLContext = null; // The GL contexts are tested from best to worst (newest to oldest), and the most desirable

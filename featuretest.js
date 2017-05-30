@@ -1,6 +1,8 @@
 // featuretest.js: Small test code to perform feature testing of browser capabilities.
 // Call the function browserFeatureTest(successCallback) to run the test (see below).
 
+var browserFeatureTest = (function() {
+
 // userAgentExplained: Pass in the result from deduceUserAgent() here.
 function allocateLargestPossibleContiguousBlock(userAgentExplained) {
   // Workaround https://github.com/Mozilla-Games/browser_feature_test/issues/4
@@ -598,7 +600,7 @@ function browserFeatureTest(successCallback) {
   var userAgentExplained = deduceUserAgent(navigator.userAgent);
 
   var results = {
-    featureTestVersion: '2', // The version number for featuretest.js itself.
+    featureTestVersion: '3', // The version number for featuretest.js itself.
     runDate: new Date().yyyymmddhhmmss(),
     userAgent: navigator.userAgent,
     userAgentExplained: userAgentExplained,
@@ -774,3 +776,44 @@ function browserFeatureTestAsPromise() {
   });
   return promise;
 }
+
+var siteUploaderKey = '';
+var siteTitleKey = '';
+
+function uploadTelemetryData(systemInfo, stepData, userData) {
+  var xhrBody = {
+    siteUploaderKey: siteUploaderKey,
+    siteTitleKey: siteTitleKey
+  };
+  if (systemInfo) xhrBody.systemInfo = systemInfo;
+  if (stepData) xhrBody.stepData = stepData;
+  if (userData) xhrBody.userData = userData;
+  // TODO: Actually send to upstream telemetry.
+  console.log(JSON.stringify(xhrBody, null, 2));
+}
+
+function uploadPageEnterStep(uploaderKey, titleKey, userData) {
+  siteUploaderKey = uploaderKey;
+  siteTitleKey = titleKey;
+  browserFeatureTestAsPromise().then((systemInfo) => {
+    uploadTelemetryData(systemInfo, null, userData);
+  });
+}
+
+function uploadPageLoadStep(pageStepData, userData) {
+  uploadTelemetryData(null, pageStepData, userData);
+}
+
+function uploadPageLeaveStep(pageLeaveData, userData) {
+  pageLeaveData.isPageLeaveStep = true;
+  uploadTelemetryData(null, pageLeaveData, userData);
+}
+
+return {
+  systemInfo: browserFeatureTestAsPromise,
+  uploadPageEnterStep: uploadPageEnterStep,
+  uploadPageLoadStep: uploadPageLoadStep,
+  uploadPageLeaveStep: uploadPageLeaveStep
+};
+
+})();

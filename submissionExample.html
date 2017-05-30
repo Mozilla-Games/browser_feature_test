@@ -1,0 +1,33 @@
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<canvas id='canvas'>
+<script src='featuretest.js'></script>
+<script>
+
+// (Required) Page navigation step: when entering the page, send initial telemetry ping.
+browserFeatureTest.uploadPageEnterStep('developer_name', 'game_name');
+
+// (Optional) Page loading step: Report whether loading the site succeeded or failed.
+// The code here illustrates a scenario where being able to get a WebGL context reflects
+// whether startup succeeded, on a real page there would be many other steps.
+var gl = document.getElementById('canvas').getContext('webgl2');
+browserFeatureTest.uploadPageLoadStep({
+  result: gl ? 'success' : 'error',
+  info: gl ? 'ok' : 'No WebGL 2 support'
+});
+
+// (Optional) Page error step: Report if there is an uncaught loading error.
+window.addEventListener('error', function(e) {
+  browserFeatureTest.uploadPageLoadStep({ result: 'error', info: e.toString() });
+}, false);
+
+// (Optional) Page close step: Report when user is leaving the page, that they are doing
+// so voluntarily, and not e.g. due to a browser crash.
+window.addEventListener('unload', function() {
+  browserFeatureTest.uploadPageLeaveStep();
+}, false);
+
+</script>
+</body>
+</html>

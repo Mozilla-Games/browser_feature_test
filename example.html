@@ -7,13 +7,12 @@
   </head>
   <body>
     <h2>featuretest.js example</h2>
-    <div id='results'></div>
+    <div id='systemInfo'></div>
     <script>
-    function onFeatureTestComplete(results) {
-      document.getElementById('results').innerHTML = '<pre>results = ' + JSON.stringify(results, null, 2); + ';</pre>';
-    }
-    document.getElementById('results').innerHTML = '<pre>Running feature test...</pre>';
-    browserFeatureTest(onFeatureTestComplete);
+    document.getElementById('systemInfo').innerHTML = '<pre>Running feature test...</pre>';
+    browserFeatureTest.systemInfo().then((systemInfo) => {
+      document.getElementById('systemInfo').innerHTML = '<pre>systemInfo = ' + JSON.stringify(systemInfo, null, 2); + ';</pre>';
+    });
     </script>
     <hr>
     <div>Result fields are interpreted as follows:
@@ -81,17 +80,16 @@
       &lt;body&gt;
         &lt;script src="featuretest.js"&gt;&lt;/script&gt;
         &lt;script&gt;
-          function onFeatureTestComplete(results) {
+          browserFeatureTest.systemInfo().then((systemInfo) => {
             // Example: how to test for the presence of a certain API
-            if (results.supportedApis.indexOf('IndexedDB') != -1) console.log('IndexedDB is supported!');
+            if (systemInfo.supportedApis.indexOf('IndexedDB') != -1) console.log('IndexedDB is supported!');
 
             // Example: how to find if WebGL comes without a performance caveat.
-            if (results.webGLSupport.webgl1.supported &amp;&amp; !results.webGLSupport.webgl1.performanceCaveat) console.log('Hardware-accelerated WebGL is supported!');
+            if (systemInfo.webGLSupport.webgl1.supported &amp;&amp; !systemInfo.webGLSupport.webgl1.performanceCaveat) console.log('Hardware-accelerated WebGL is supported!');
 
             // Example: dump all results as a whitespace-readable JSON string.
-            console.log(JSON.stringify(results, null, 2));
-          }
-          browserFeatureTest(onFeatureTestComplete);
+            console.log(JSON.stringify(systemInfo, null, 2));
+          });
         &lt;/script&gt;
       &lt;/body&gt;
     &lt;/html&gt;

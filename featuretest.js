@@ -812,6 +812,7 @@ function uploadTelemetryData(systemInfo, stepData, userData) {
     console.log('Telemetry send aborted with status ' + xhr.status);
     if (e) console.log(e);
   }
+  xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.send(xhrBody);
 }
 

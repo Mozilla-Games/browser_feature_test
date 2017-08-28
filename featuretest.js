@@ -789,8 +789,29 @@ function uploadTelemetryData(systemInfo, stepData, userData) {
   if (systemInfo) xhrBody.systemInfo = systemInfo;
   if (stepData) xhrBody.stepData = stepData;
   if (userData) xhrBody.userData = userData;
-  // TODO: Actually send to upstream telemetry.
+
   console.log(JSON.stringify(xhrBody, null, 2));
+
+  // Send the report.
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'https://0ewtnbnat1.execute-api.us-west-2.amazonaws.com/Production/telemetry', true);
+  xhr.onload = function(e) {
+    console.log('Telemetry send finished with status ' + xhr.status);
+    if (e) console.log(e);
+  }
+  xhr.onerror = function(e) {
+    console.log('Telemetry send failed with status ' + xhr.status);
+    if (e) console.error(e);
+  }
+  xhr.ontimeout = function(e) {
+    console.log('Telemetry send timed out with status ' + xhr.status);
+    if (e) console.log(e);
+  }
+  xhr.onabort = function(e) {
+    console.log('Telemetry send aborted with status ' + xhr.status);
+    if (e) console.log(e);
+  }
+  xhr.send(xhrBody);
 }
 
 function uploadPageEnterStep(uploaderKey, titleKey, userData) {
@@ -809,6 +830,7 @@ function uploadPageLoadStep(pageStepData, userData) {
 
 function uploadPageLeaveStep(pageLeaveData, userData) {
   if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
+  if (!pageLeaveData) pageLeaveData = {};
   pageLeaveData.isPageLeaveStep = true;
   uploadTelemetryData(null, pageLeaveData, userData);
 }

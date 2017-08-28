@@ -781,7 +781,8 @@ var siteUploaderKey = '';
 var siteTitleKey = '';
 
 function uploadTelemetryData(systemInfo, stepData, userData) {
-  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
+// Disabled now for testing
+//  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
   var xhrBody = {
     siteUploaderKey: siteUploaderKey,
     siteTitleKey: siteTitleKey
@@ -815,7 +816,8 @@ function uploadTelemetryData(systemInfo, stepData, userData) {
 }
 
 function uploadPageEnterStep(uploaderKey, titleKey, userData) {
-  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
+// Disabled now for testing
+//  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
   siteUploaderKey = uploaderKey;
   siteTitleKey = titleKey;
   browserFeatureTestAsPromise().then((systemInfo) => {
@@ -824,12 +826,14 @@ function uploadPageEnterStep(uploaderKey, titleKey, userData) {
 }
 
 function uploadPageLoadStep(pageStepData, userData) {
-  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
+// Disabled now for testing
+//  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
   uploadTelemetryData(null, pageStepData, userData);
 }
 
 function uploadPageLeaveStep(pageLeaveData, userData) {
-  if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
+// Disabled now for testing
+  //if (navigator.doNotTrack) return; // User has specified the Do Not Track header wishing not to be tracked by web sites, so no-op.
   if (!pageLeaveData) pageLeaveData = {};
   pageLeaveData.isPageLeaveStep = true;
   uploadTelemetryData(null, pageLeaveData, userData);

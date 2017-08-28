@@ -813,7 +813,7 @@ function uploadTelemetryData(systemInfo, stepData, userData) {
     if (e) console.log(e);
   }
   xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.send(xhrBody);
+  xhr.send(JSON.stringify(xhrBody));
 }
 
 function uploadPageEnterStep(uploaderKey, titleKey, userData) {

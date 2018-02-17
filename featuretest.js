@@ -429,8 +429,8 @@ function browserFeatureTest(successCallback) {
   storeSupport('Geolocation API', navigator.geolocation);
   storeSupport('Battery Status API', navigator.getBattery);
   storeSupport('WebAssembly', typeof WebAssembly !== 'undefined');
-  storeSupport('WebVR 1.1', typeof VRDisplay !== 'undefined' && typeof VRPose !== 'undefined' && typeof Navigator !== 'undefined' && typeof Navigator.getVRDisplays !== 'undefined'); // https://immersive-web.github.io/webvr/spec/1.1/
-  storeSupport('WebXR', typeof XR !== 'undefined' && typeof XRDevice !== 'undefined'); // https://immersive-web.github.io/webxr/spec/latest/
+  storeSupport('WebVR 1.1', typeof navigator.getVRDisplays !== 'undefined' && typeof VRDisplay !== 'undefined' && typeof VRPose !== 'undefined'); // https://immersive-web.github.io/webvr/spec/1.1/
+  storeSupport('WebXR', typeof navigator.xr !== 'undefined' && typeof XRDevice !== 'undefined'); // https://immersive-web.github.io/webxr/spec/latest/
 
   var webGLSupport = {};
   var bestGLContext = null; // The GL contexts are tested from best to worst (newest to oldest), and the most desirable
